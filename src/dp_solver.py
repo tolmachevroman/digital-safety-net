@@ -1,5 +1,9 @@
 import numpy as np
-from utility import utility
+import matplotlib.pyplot as plt
+
+
+def utility(c):
+    return 2 * (c**0.5 - 1)
 
 
 class DPSolver:
@@ -10,6 +14,7 @@ class DPSolver:
         self.w_grid = w_grid
         self.tau_grid = tau_grid
         self.V = np.zeros(len(w_grid))  # Initial value function
+        self.V_evolution = []  # Track value function evolution
 
     def iterate_value_function(self, max_iter=1000, epsilon=1e-6):
         for iter in range(max_iter):
@@ -27,6 +32,7 @@ class DPSolver:
                                 if val > max_val:
                                     max_val = val
                 V_new[i] = max_val
+            self.V_evolution.append(V_new.copy())  # Track the value function
             if np.max(np.abs(V_new - self.V)) < epsilon:
                 break
             self.V = V_new
@@ -54,3 +60,13 @@ class DPSolver:
             tau_opt[i] = best_tau
             phi_opt[i] = best_phi
         return tau_opt, phi_opt
+
+    def simulate(self, w0, periods):
+        tau_opt, phi_opt = self.extract_policy_functions()
+        w = w0
+        w_trajectory = [w]
+        for t in range(periods):
+            tau = np.interp(w, self.w_grid, tau_opt)
+            w = np.interp(w, self.w_grid, phi_opt)
+            w_trajectory.append(w)
+        return w_trajectory
