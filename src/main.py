@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 def main():
     incomes = [200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800]
     probs = [1/9] * len(incomes)
-    beta = 0.95
+    beta = 0.05
     w_grid = np.linspace(0, 1000, 100)
     tau_grid = np.linspace(-200, 200, 50)
 
@@ -14,33 +14,28 @@ def main():
 
     tau_opt, phi_opt = dp_solver.extract_policy_functions()
     # Simulate the state variable evolution over 100 periods
-    w0 = 100  # Initial state
-    periods = 100
-    w_trajectory = dp_solver.simulate(w0, periods)
 
-    # Plot the state variable trajectory
+    # Number of participants
+    num_participants = 10
+    initial_states = np.linspace(0, 1000, num_participants)
+    periods = 100
+
+    all_trajectories = []
+
+    # Simulate for each participant
+    for i in range(num_participants):
+        w0 = initial_states[i]
+        w_trajectory = dp_solver.simulate(w0, periods)
+        all_trajectories.append(w_trajectory)
+
+    # Plot the state variable trajectories for all participants
     plt.figure(figsize=(10, 6))
-    plt.plot(range(periods + 1), w_trajectory, marker='o')
+    for i, trajectory in enumerate(all_trajectories):
+        plt.plot(range(periods + 1), trajectory,
+                 marker='o', label=f'Participant {i+1}')
     plt.xlabel('Period')
     plt.ylabel('State Variable w')
-    plt.title('State Variable Evolution Over Time')
-    plt.show()
-
-    # Plot the optimal policy functions
-    plt.figure(figsize=(10, 6))
-    plt.plot(dp_solver.w_grid, tau_opt, label='Optimal Transfer Function τ')
-    plt.xlabel('State Variable w')
-    plt.ylabel('Transfer Function τ')
-    plt.title('Optimal Transfer Function τ(w)')
-    plt.legend()
-    plt.show()
-
-    plt.figure(figsize=(10, 6))
-    plt.plot(dp_solver.w_grid, phi_opt,
-             label='Optimal State Transition Function φ')
-    plt.xlabel('State Variable w')
-    plt.ylabel('State Transition Function φ')
-    plt.title('Optimal State Transition Function φ(w)')
+    plt.title('State Variable Evolution Over Time for Multiple Participants')
     plt.legend()
     plt.show()
 
